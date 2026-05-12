@@ -2,10 +2,12 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>Aly Tech Store | المتجر الذكي</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f0fdf4">
+    <meta name="description" content="Aly Tech Store - متجر ذكي للمنتجات التقنية مع خاصية المعاينة الافتراضية وتوصيل سريع">
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
     
     <link rel="apple-touch-icon" href="1000538486.png">
     <link rel="icon" type="image/png" href="1000538486.png">
@@ -260,6 +262,39 @@
             font-weight: bold;
             color: #854d0e;
         }
+
+        .floating-countdown {
+            background: #fee2e2;
+            border-radius: 40px;
+            padding: 10px 18px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            direction: ltr;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: var(--primary);
+            transition: width 0.3s;
+        }
+        .static-content {
+            background: rgba(255,255,255,0.6);
+            border-radius: 28px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -286,10 +321,10 @@
         <input type="text" id="custName" placeholder="الاسم بالكامل">
         <input type="tel" id="custPhone" placeholder="رقم الهاتف">
         <input type="text" id="custAddress" placeholder="العنوان بالتفصيل">
-        <button class="glass-btn" onclick="sendOrder()" style="width: 100%; background: var(--success); border: none; margin-top: 20px; justify-content: center; font-weight: bold; padding: 16px; font-size: 1rem; color:white;">
+        <button class="glass-btn" id="confirmOrderBtn" style="width: 100%; background: var(--success); border: none; margin-top: 20px; justify-content: center; font-weight: bold; padding: 16px; font-size: 1rem; color:white;">
             تأكيد عبر واتساب <i class="fab fa-whatsapp" style="margin-right: 10px;"></i>
         </button>
-        <p onclick="closeOrderModal()" style="text-align:center; cursor:pointer; margin-top:18px; color:#64748b;">إلغاء</p>
+        <p id="closeOrderModalBtn" style="text-align:center; cursor:pointer; margin-top:18px; color:#64748b;">إلغاء</p>
     </div>
 </div>
 
@@ -326,11 +361,11 @@
 </div>
 
 <header>
-    <div class="logo" onclick="goHome()">
+    <div class="logo" id="homeLogoBtn">
         <img src="1000538486.png" alt="Aly Tech Logo">
         <span>Aly Tech</span>
     </div>
-    <div class="glass-btn" onclick="toggleMenu()"><i class="fas fa-bars"></i></div>
+    <div class="glass-btn" id="menuToggleBtn"><i class="fas fa-bars"></i></div>
 </header>
 
 <div id="sidebar" class="sidebar">
@@ -340,13 +375,13 @@
     </div>
     <h3 style="color:var(--primary-dark); border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; margin-top:0;">الأقسام</h3>
     <div id="catsList">
-        <div style="padding:15px 0; cursor:pointer;" onclick="loadStore()">🏠 المتجر الرئيسي</div>
+        <div id="mainStoreCat" style="padding:15px 0; cursor:pointer;">🏠 المتجر الرئيسي</div>
     </div>
     <div style="margin-top: 20px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
-        <div style="padding:12px 0; cursor:pointer; display: flex; align-items: center; gap: 10px;" onclick="showAboutUs()">
+        <div id="aboutUsSidebar" style="padding:12px 0; cursor:pointer; display: flex; align-items: center; gap: 10px;">
             <i class="fas fa-info-circle" style="color: var(--primary);"></i> من نحن
         </div>
-        <div style="padding:12px 0; cursor:pointer; display: flex; align-items: center; gap: 10px;" onclick="showPrivacyPolicy()">
+        <div id="privacySidebar" style="padding:12px 0; cursor:pointer; display: flex; align-items: center; gap: 10px;">
             <i class="fas fa-lock" style="color: var(--primary);"></i> سياسة الخصوصية
         </div>
     </div>
@@ -354,562 +389,416 @@
 
 <div id="notification"><span id="notif-text"></span></div>
 <div id="loader" style="text-align:center; padding:50px; display:none;"><i class="fas fa-circle-notch fa-spin fa-2x" style="color:var(--primary);"></i></div>
-
+<div id="staticHomeContent" class="static-content" style="display: none;">
+    <i class="fas fa-crown" style="font-size: 2rem; color: var(--primary);"></i>
+    <h2>أهلاً بك في Aly Tech Store</h2>
+    <p>أحدث المنتجات التقنية، جودة عالية وأسعار تنافسية. اكتشف مجموعتنا واستمتع بتجربة تسوق فريدة مع خاصية المعاينة الافتراضية.</p>
+</div>
 <div class="container" id="grid"></div>
 <div id="landingPage" style="display:none; padding:15px; max-width:900px; margin:auto;"></div>
+<div id="pageSentinel" style="height: 20px; margin: 20px;"></div>
 
 <script>
-    function showAboutUs() {
-        toggleMenu();
-        document.getElementById('aboutModal').style.display = 'flex';
-    }
-    function showPrivacyPolicy() {
-        toggleMenu();
-        document.getElementById('privacyModal').style.display = 'flex';
-    }
-    function closeInfoModal(modalId) {
-        document.getElementById(modalId).style.display = 'none';
-    }
-
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/sw.js').then(reg => {
-                console.log('SW Registered');
-            }).catch(err => console.log('SW Error', err));
-        });
-    }
-
-    let deferredPrompt;
-    const installBanner = document.getElementById('installBanner');
-    const btnInstall = document.getElementById('btnInstall');
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        installBanner.style.display = 'flex';
-    });
-
-    btnInstall.addEventListener('click', (e) => {
-        installBanner.style.display = 'none';
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choiceResult) => {
-            deferredPrompt = null;
-        });
-    });
-
-    function closeInstallBanner() {
-        installBanner.style.display = 'none';
-    }
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyDe3xaBwIdzd14PAzJ4J1wmSQy6mrGg-4w",
-        authDomain: "aly-tech-store.firebaseapp.com",
-        projectId: "aly-tech-store",
-        storageBucket: "aly-tech-store.firebasestorage.app",
-        messagingSenderId: "989989387415",
-        appId: "1:989989387415:web:3539bac522bd3f05013dd2"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const productId = urlParams.get('id');
-    let currentProductName = "";
-    let currentScale = 1;
-    let currentRotation = 0;
-    let currentTop = 0;
-    let currentLeft = 0;
-    let currentTryImageSrc = "";
-
-    function goHome() {
-        loadStore();
-        window.scrollTo(0,0);
-    }
-
-    function toggleMenu() {
-        const sb = document.getElementById('sidebar');
-        const overlay = document.getElementById('overlay');
-        const isActive = sb.classList.toggle('active');
-        overlay.style.display = isActive ? 'block' : 'none';
-    }
-
-    function openOrderModal(name) { 
-        currentProductName = name; 
-        document.getElementById("orderModal").style.display = "flex"; 
-    }
-    
-    function closeOrderModal() { document.getElementById("orderModal").style.display = "none"; }
-
-    function sendOrder() {
-        const name = document.getElementById("custName").value;
-        const phone = document.getElementById("custPhone").value;
-        const address = document.getElementById("custAddress").value;
-        if(!name || !phone || !address) { alert("من فضلك أكمل البيانات"); return; }
-        const phoneRegex = /^\d+$/;
-        if (!phoneRegex.test(phone)) {
-            alert("الرجاء إدخال رقم هاتف صحيح (أرقام فقط)");
-            return;
+    (function(){
+        // -------------------- Helper Functions & Globals --------------------
+        function escapeHtml(str) {
+            if(!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if(m === '&') return '&amp;';
+                if(m === '<') return '&lt;';
+                if(m === '>') return '&gt;';
+                return m;
+            });
         }
-        const msg = `طلب جديد:\nالمنتج: ${currentProductName}\nالاسم: ${name}\nالهاتف: ${phone}\nالعنوان: ${address}`;
-        window.location.href = `https://wa.me/201214277900?text=${encodeURIComponent(msg)}`;
-    }
 
-    function shareProduct(name) {
-        if (navigator.share) {
-            navigator.share({ title: name, url: window.location.href });
-        } else {
-            navigator.clipboard.writeText(window.location.href);
-            alert("تم نسخ رابط المنتج!");
+        function slugify(text) {
+            if(!text) return '';
+            return text.toString().toLowerCase()
+                .replace(/\s+/g, '-')
+                .replace(/[^\u0621-\u064Aa-z0-9\-]/g, '')
+                .replace(/\-\-+/g, '-')
+                .replace(/^-+/, '')
+                .replace(/-+$/, '');
         }
-    }
 
-    async function loadCategories() {
-        const snap = await db.collection("categories").get();
-        const catsDiv = document.getElementById("catsList");
-        const mainStoreDiv = catsDiv.querySelector('div[onclick="loadStore()"]');
-        catsDiv.innerHTML = '';
-        catsDiv.appendChild(mainStoreDiv);
-        snap.forEach(doc => {
-            catsDiv.innerHTML += `<div style="padding:15px 0; cursor:pointer; border-bottom:1px solid #f1f5f9;" onclick="filterCat('${doc.data().name}')">📂 ${doc.data().name}</div>`;
-        });
-    }
+        function generateOptimizedSrcSet(url) {
+            if(!url) return '';
+            if(url.includes('firebasestorage.googleapis.com') || url.includes('cloudinary.com')) {
+                let base = url.split('?')[0];
+                return `${base}?w=200 200w, ${base}?w=400 400w, ${base}?w=800 800w`;
+            }
+            return `${url} 800w`;
+        }
 
-    async function filterCat(catName) {
-        toggleMenu();
-        const grid = document.getElementById("grid");
-        grid.style.display = "grid";
-        document.getElementById("landingPage").style.display = "none";
-        grid.innerHTML = "";
-        document.getElementById("loader").style.display = "block";
-        try {
-            const snap = await db.collection("products").where("category", "==", catName).get();
-            document.getElementById("loader").style.display = "none";
-            snap.forEach(doc => renderCard(doc));
-        } catch(e) { console.error(e); document.getElementById("loader").style.display = "none"; alert("حدث خطأ في تحميل الأقسام"); }
-    }
-
-    async function loadStore() {
-        if(document.getElementById('sidebar').classList.contains('active')) toggleMenu();
-        const grid = document.getElementById("grid");
-        grid.style.display = "grid";
-        document.getElementById("landingPage").style.display = "none";
-        grid.innerHTML = "";
-        document.getElementById("loader").style.display = "block";
-        try {
-            const snap = await db.collection("products").orderBy("createdAt", "desc").get();
-            document.getElementById("loader").style.display = "none";
-            snap.forEach(doc => renderCard(doc));
-        } catch(e) { document.getElementById("loader").style.display = "none"; alert("فشل تحميل المنتجات"); }
-    }
-
-    function calculateDiscount(old, current) {
-        if(!old || !current || old <= current) return null;
-        const discount = ((old - current) / old) * 100;
-        return Math.round(discount);
-    }
-
-    function renderCard(doc) {
-        const p = doc.data();
-        const hasTryOn = p.pTryType === "custom";
-        const promo = p.promoTag ? `<div class="promo-badge">${p.promoTag}</div>` : '';
-        const imgHtml = (p.img && p.img.trim() !== "") ? `<img class="card-img" src="${p.img}" loading="lazy">` : '';
+        // تخزين بيانات العميل
+        function loadCustomerData() {
+            const name = localStorage.getItem('cust_name');
+            const phone = localStorage.getItem('cust_phone');
+            if(name) document.getElementById('custName').value = name;
+            if(phone) document.getElementById('custPhone').value = phone;
+        }
+        function saveCustomerData(name, phone) {
+            if(name) localStorage.setItem('cust_name', name);
+            if(phone) localStorage.setItem('cust_phone', phone);
+        }
         
-        document.getElementById("grid").innerHTML += `
-            <div class="card" onclick="openProduct('${doc.id}')">
-                ${promo}
-                ${hasTryOn ? '<div class="try-badge">معاينة ✨</div>' : ''}
-                ${imgHtml}
-                <div class="p-body">
-                    <h3 style="font-size:0.95rem; margin:5px 0; height:45px; overflow:hidden; font-weight:700;">${escapeHtml(p.name)}</h3>
-                    <div style="margin-bottom: 5px;">
-                         ${(p.oldPrice && parseFloat(p.oldPrice) > parseFloat(p.price)) ? `<span class="old-price-card">${p.oldPrice} ج.م</span>` : ''}
-                         <span class="current-price">${p.price} ج.م</span>
+        // Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDe3xaBwIdzd14PAzJ4J1wmSQy6mrGg-4w",
+            authDomain: "aly-tech-store.firebaseapp.com",
+            projectId: "aly-tech-store",
+            storageBucket: "aly-tech-store.firebasestorage.app",
+            messagingSenderId: "989989387415",
+            appId: "1:989989387415:web:3539bac522bd3f05013dd2"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let currentProductId = null;
+        let currentProductName = "";
+        let currentScale = 1, currentRotation = 0, currentTop = 0, currentLeft = 0, currentTryImageSrc = "";
+        let currentSlide = 0;
+        let lastDoc = null, loadingMore = false, hasMore = true;
+        let notificationInterval = null;
+        
+        // Intersection Observer for infinite scroll
+        const sentinel = document.getElementById('pageSentinel');
+        let observer = null;
+        
+        function setupInfiniteScroll() {
+            if(observer) observer.disconnect();
+            observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if(entry.isIntersecting && hasMore && !loadingMore && document.getElementById("grid").style.display === "grid") {
+                        loadMoreProducts();
+                    }
+                });
+            }, { threshold: 0.5 });
+            if(sentinel) observer.observe(sentinel);
+        }
+        
+        async function loadMoreProducts() {
+            if(loadingMore || !hasMore) return;
+            loadingMore = true;
+            document.getElementById("loader").style.display = "block";
+            try {
+                let query = db.collection("products").orderBy("createdAt", "desc").limit(6);
+                if(lastDoc) query = query.startAfter(lastDoc);
+                const snap = await query.get();
+                if(snap.empty) hasMore = false;
+                else {
+                    snap.forEach(doc => renderCard(doc));
+                    lastDoc = snap.docs[snap.docs.length-1];
+                }
+            } catch(e) { console.error(e); }
+            document.getElementById("loader").style.display = "none";
+            loadingMore = false;
+        }
+        
+        async function loadStore(reset = true) {
+            if(document.getElementById('sidebar').classList.contains('active')) toggleMenu();
+            const grid = document.getElementById("grid");
+            grid.style.display = "grid";
+            document.getElementById("landingPage").style.display = "none";
+            document.getElementById("staticHomeContent").style.display = "block";
+            if(reset) {
+                grid.innerHTML = "";
+                lastDoc = null;
+                hasMore = true;
+                loadingMore = false;
+                document.getElementById("loader").style.display = "block";
+                try {
+                    const snap = await db.collection("products").orderBy("createdAt", "desc").limit(6).get();
+                    document.getElementById("loader").style.display = "none";
+                    snap.forEach(doc => renderCard(doc));
+                    lastDoc = snap.docs[snap.docs.length-1];
+                    hasMore = snap.docs.length === 6;
+                } catch(e) { document.getElementById("loader").style.display = "none"; alert("فشل تحميل المنتجات"); }
+            }
+            setupInfiniteScroll();
+            window.history.pushState({}, "", "/");
+        }
+        
+        function renderCard(doc) {
+            const p = doc.data();
+            const hasTryOn = p.pTryType === "custom";
+            const promo = p.promoTag ? `<div class="promo-badge">${escapeHtml(p.promoTag)}</div>` : '';
+            const imgHtml = (p.img && p.img.trim() !== "") ? `<img class="card-img" src="${p.img}" alt="${escapeHtml(p.name)}" loading="lazy" srcset="${generateOptimizedSrcSet(p.img)}" sizes="(max-width: 600px) 200px, 400px">` : '';
+            document.getElementById("grid").innerHTML += `
+                <div class="card" data-product-id="${doc.id}" data-product-slug="${p.slug || slugify(p.name)}">
+                    ${promo}
+                    ${hasTryOn ? '<div class="try-badge">معاينة ✨</div>' : ''}
+                    ${imgHtml}
+                    <div class="p-body">
+                        <h3 style="font-size:0.95rem; margin:5px 0; height:45px; overflow:hidden; font-weight:700;">${escapeHtml(p.name)}</h3>
+                        <div style="margin-bottom: 5px;">
+                             ${(p.oldPrice && parseFloat(p.oldPrice) > parseFloat(p.price)) ? `<span class="old-price-card">${p.oldPrice} ج.م</span>` : ''}
+                             <span class="current-price">${p.price} ج.م</span>
+                        </div>
+                        <button class="buy-now-btn" data-product-id="${doc.id}" data-product-slug="${p.slug || slugify(p.name)}">شراء الآن</button>
                     </div>
-                    <button class="buy-now-btn" onclick="event.stopPropagation(); openProduct('${doc.id}')">شراء الآن</button>
-                </div>
-            </div>`;
-    }
-
-    function getYouTubeEmbedUrl(url) {
-        if(!url) return null;
-        let videoId = '';
-        const patterns = [
-            /(?:youtube\.com\/watch\?v=|youtu.be\/)([^&\n?#]+)/,
-            /youtube\.com\/embed\/([^/?]+)/,
-            /youtube\.com\/shorts\/([^/?]+)/
-        ];
-        for(let p of patterns) {
-            const match = url.match(p);
-            if(match) { videoId = match[1]; break; }
+                </div>`;
         }
-        if(videoId) return `https://www.youtube.com/embed/${videoId}`;
-        return null;
-    }
-
-    function selectTryImage(src) {
-        currentTryImageSrc = src;
-        const overlay = document.getElementById('overlayProduct');
-        if(overlay && overlay.style.display !== 'none') {
-            overlay.src = src;
-            overlay.style.transform = `scale(${currentScale}) rotate(${currentRotation}deg) translate(-50%, -50%)`;
-        }
-        document.querySelectorAll('.try-images-scroll img').forEach(img => {
-            img.classList.remove('active');
-            if(img.src === src) img.classList.add('active');
-        });
-    }
-
-    async function loadLandingPage(id) {
-        document.getElementById("grid").style.display = "none";
-        document.getElementById("loader").style.display = "block";
-        try {
-            const docRef = db.collection("products").doc(id);
-            const doc = await docRef.get();
-            if (!doc.exists) {
+        
+        async function loadLandingPageBySlug(slugOrId) {
+            document.getElementById("grid").style.display = "none";
+            document.getElementById("staticHomeContent").style.display = "none";
+            document.getElementById("loader").style.display = "block";
+            try {
+                let doc;
+                const bySlug = await db.collection("products").where("slug", "==", slugOrId).limit(1).get();
+                if(!bySlug.empty) doc = bySlug.docs[0];
+                else {
+                    const byId = await db.collection("products").doc(slugOrId).get();
+                    if(byId.exists) doc = byId;
+                }
+                if(!doc || !doc.exists) throw new Error("not found");
+                const productData = doc.data();
+                if(!productData.slug) await doc.ref.update({ slug: slugify(productData.name) });
+                await doc.ref.update({ views: firebase.firestore.FieldValue.increment(1) }).catch(e=>console.log);
+                await renderProductPage(doc.id, productData);
+                window.history.pushState({}, "", `/product/${productData.slug || slugify(productData.name)}`);
+            } catch(e) {
                 document.getElementById("loader").style.display = "none";
                 document.getElementById("landingPage").style.display = "block";
-                document.getElementById("landingPage").innerHTML = `
-                    <div style="text-align:center; padding:50px;">
-                        <i class="fas fa-exclamation-triangle" style="font-size: 64px; color: var(--warning);"></i>
-                        <h2>عذراً، المنتج غير موجود</h2>
-                        <p>قد يكون المنتج قد تم حذفه أو الرابط غير صحيح.</p>
-                        <button class="glass-btn" onclick="loadStore()" style="margin-top:20px;">العودة للمتجر</button>
-                    </div>
-                `;
-                return;
+                document.getElementById("landingPage").innerHTML = `<div style="text-align:center; padding:50px;"><i class="fas fa-exclamation-triangle" style="font-size: 64px; color: var(--warning);"></i><h2>عذراً، المنتج غير موجود</h2><button class="glass-btn" onclick="loadStore()">العودة للمتجر</button></div>`;
             }
-            docRef.update({ views: firebase.firestore.FieldValue.increment(1) }).catch(e => console.log(e));
+        }
+        
+        async function renderProductPage(id, p) {
             document.getElementById("loader").style.display = "none";
             document.getElementById("landingPage").style.display = "block";
-            const p = doc.data();
             const images = p.images || [p.img];
             const features = p.note1 ? p.note1.split('\n') : [];
             const hasTryOn = p.pTryType === "custom";
-            let tryImages = [];
-            if(hasTryOn && p.tryImages && Array.isArray(p.tryImages) && p.tryImages.length) {
-                tryImages = p.tryImages;
-            } else if(hasTryOn && p.img) {
-                tryImages = [p.img];
-            }
-            const discountVal = calculateDiscount(parseFloat(p.oldPrice), parseFloat(p.price));
+            let tryImages = hasTryOn ? (p.tryImages && Array.isArray(p.tryImages) ? p.tryImages : [p.img]) : [];
+            const discountVal = ((p.oldPrice && parseFloat(p.oldPrice) > parseFloat(p.price)) ? Math.round(((parseFloat(p.oldPrice)-parseFloat(p.price))/parseFloat(p.oldPrice))*100) : null);
             const videoEmbed = getYouTubeEmbedUrl(p.videoUrl);
-            
-            let videoHTML = '';
-            if(videoEmbed) {
-                videoHTML = `<div class="video-container"><iframe src="${videoEmbed}" allowfullscreen></iframe></div>`;
-            }
-            
-            let tryImagesHTML = '';
-            if(hasTryOn && tryImages.length > 0) {
-                tryImagesHTML = `
-                    <div style="margin-top: 15px;">
-                        <div style="font-size:0.8rem; margin-bottom:6px;">اختر الصورة المناسبة:</div>
-                        <div class="try-images-scroll" id="tryImagesScroll">
-                            ${tryImages.map(src => `<img src="${src}" onclick="selectTryImage('${src}')">`).join('')}
-                        </div>
-                    </div>
-                `;
-            }
-
-            const extraFeature = p.extraFeature ? p.extraFeature : null;
-            let extraBox = '';
-            if (extraFeature) {
-                extraBox = `<div class="extra-feature-box"><i class="fas fa-star"></i> ${escapeHtml(extraFeature)}</div>`;
-            } else if (p.promoTag && p.promoTag.includes("هدية")) {
-                extraBox = `<div class="extra-feature-box"><i class="fas fa-gift"></i> ${escapeHtml(p.promoTag)}</div>`;
-            }
-            
-            let extraFieldsHtml = '';
-            if (p.extraFields && Array.isArray(p.extraFields) && p.extraFields.length > 0) {
-                const fields = p.extraFields.filter(f => f.key && f.key.trim() !== '');
-                if (fields.length) {
-                    extraFieldsHtml = `
-                        <div class="extra-fields-table">
-                            <div class="extra-fields-grid">
-                                ${fields.map(f => `<div class="extra-field-item"><span class="extra-field-key">${escapeHtml(f.key)}:</span> ${escapeHtml(f.value)}</div>`).join('')}
-                            </div>
-                        </div>
-                    `;
+            let tryImagesHTML = hasTryOn && tryImages.length ? `<div><div class="try-images-scroll" id="tryImagesScroll">${tryImages.map(src => `<img src="${src}" alt="خيار معاينة">`).join('')}</div></div>` : '';
+            let extraBox = p.extraFeature ? `<div class="extra-feature-box"><i class="fas fa-star"></i> ${escapeHtml(p.extraFeature)}</div>` : (p.promoTag && p.promoTag.includes("هدية") ? `<div class="extra-feature-box"><i class="fas fa-gift"></i> ${escapeHtml(p.promoTag)}</div>` : '');
+            let countdownHtml = discountVal ? `<div class="floating-countdown"><i class="fas fa-hourglass-half"></i> ينتهي الخصم خلال: <span id="discountTimer">23:59:59</span></div>` : '';
+            let schemaJson = {
+                "@context": "https://schema.org/",
+                "@type": "Product",
+                "name": p.name,
+                "image": p.img,
+                "description": p.note1 ? p.note1.substring(0,160) : "منتج تقني مميز",
+                "sku": id,
+                "offers": {
+                    "@type": "Offer",
+                    "priceCurrency": "EGP",
+                    "price": p.price,
+                    "availability": "https://schema.org/InStock"
                 }
-            }
-            
+            };
             document.getElementById("landingPage").innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                    <div onclick="loadStore()" style="cursor:pointer; color:var(--primary); font-weight:bold;"><i class="fas fa-arrow-right"></i> العودة للمتجر</div>
-                    <div class="glass-btn" onclick="shareProduct('${p.name}')"><i class="fas fa-share-alt"></i> مشاركة</div>
-                </div>
-                
+                <div style="display:flex; justify-content:space-between; margin-bottom:20px;"><div id="backToStoreBtn" style="cursor:pointer; color:var(--primary);"><i class="fas fa-arrow-right"></i> العودة للمتجر</div><div class="glass-btn" id="shareProductBtn"><i class="fas fa-share-alt"></i> مشاركة</div></div>
                 <h1 class="product-name">${escapeHtml(p.name)}</h1>
-                
-                <div class="slider-wrapper">
-                    <div class="slider-container" id="mainSlider">
-                        ${images.map(img => `<img src="${img}">`).join('')}
-                    </div>
-                    ${images.length > 1 ? `
-                    <div class="slider-nav">
-                        <button class="nav-btn" onclick="moveSlider(-1)"><i class="fas fa-chevron-left"></i></button>
-                        <button class="nav-btn" onclick="moveSlider(1)"><i class="fas fa-chevron-right"></i></button>
-                    </div>` : ''}
-                </div>
-                
-                <div class="price-container">
-                    ${discountVal ? `<div class="discount-badge-btn"><i class="fas fa-fire"></i> خصم ${discountVal}% اليوم!</div>` : ''}
-                    ${p.promoTag ? `<div style="color:var(--primary); font-weight:bold; margin-bottom:8px;">${p.promoTag}</div>` : ''}
-                    <div style="display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px;">
-                        <span style="font-size:2.5rem; font-weight:900; color:var(--primary);">${p.price} <small style="font-size:1rem;">ج.م</small></span>
-                    </div>
-                    ${(p.oldPrice && parseFloat(p.oldPrice) > parseFloat(p.price)) ? `<div style="text-decoration: line-through; color: #94a3b8; font-size: 1rem;">${p.oldPrice} ج.م</div>` : ''}
-                </div>
-
-                ${extraBox}
-                
-                ${videoHTML}
-                
-                <div class="stats-bar">
-                    <div class="stat-item"><i class="fas fa-eye"></i> ${p.views || 0} مشاهدة</div>
-                    <div class="stat-item" style="color:var(--warning)"><i class="fas fa-box"></i> المتبقي: ${p.stock || 1}</div>
-                </div>
-
-                ${hasTryOn ? `
-                    <div id="tryOnSection">
-                        <h3 style="margin-top:0; font-size:1.2rem;"><i class="fas fa-magic"></i> تجربة المعاينة الافتراضية</h3>
-                        <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleUserPhoto(event)">
-                        <button class="glass-btn" onclick="document.getElementById('fileInput').click()" style="width:100%; justify-content:center; margin-bottom:16px;">
-                            <i class="fas fa-upload"></i> ارفع صورة للمعاينة
-                        </button>
-                        ${tryImagesHTML}
-                        <div class="try-on-area">
-                            <img id="userPhoto" src="https://via.placeholder.com/400x500/f0fdf4/16a34a?text=Upload+Photo">
-                            <img id="overlayProduct" src="${tryImages[0] || ''}" style="display:none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(1); width: 150px;">
-                        </div>
-                        <div class="controls-cross" id="tryControls" style="display:none;">
-                            <div class="cross-row">
-                                <button class="control-btn" onclick="adjustProduct('up')"><i class="fas fa-arrow-up control-icon"></i> أعلى</button>
-                            </div>
-                            <div class="cross-row">
-                                <button class="control-btn" onclick="adjustProduct('left')"><i class="fas fa-arrow-left control-icon"></i> يسار</button>
-                                <button class="control-btn" onclick="adjustProduct('down')"><i class="fas fa-arrow-down control-icon"></i> أسفل</button>
-                                <button class="control-btn" onclick="adjustProduct('right')"><i class="fas fa-arrow-right control-icon"></i> يمين</button>
-                            </div>
-                            <div class="cross-row">
-                                <button class="control-btn" onclick="adjustProduct('zoomIn')"><i class="fas fa-plus control-icon"></i> تكبير</button>
-                                <button class="control-btn" onclick="adjustProduct('zoomOut')"><i class="fas fa-minus control-icon"></i> تصغير</button>
-                                <button class="control-btn" onclick="adjustProduct('rotate')"><i class="fas fa-sync-alt control-icon"></i> تدوير</button>
-                                <button class="control-btn" onclick="resetProductTransform()"><i class="fas fa-undo-alt control-icon"></i> إعادة ضبط</button>
-                            </div>
-                        </div>
-                        ${p.tryNote ? `<div class="try-note-box"><i class="fas fa-info-circle"></i> ${escapeHtml(p.tryNote)}</div>` : ''}
-                    </div>
-                ` : ''}
-                
-                ${extraFieldsHtml}
-                
-                <div style="margin-top:24px;">
-                    ${features.map(f => f.trim() ? `<div style="background:#f8fafc; padding:14px; border-radius:20px; margin-bottom:12px; display:flex; align-items:center; gap:12px; border-right:4px solid var(--primary);">
-                        <i class="fas fa-check-circle" style="color:var(--primary); font-size:1rem;"></i> ${escapeHtml(f)}
-                    </div>` : '').join('')}
-                </div>
-                
-                <button onclick="openOrderModal('${p.name}')" style="width:100%; padding:20px; background:var(--success); border:none; color:white; border-radius:60px; font-weight:bold; font-size:1.2rem; margin-top:30px; cursor:pointer; box-shadow: 0 8px 20px rgba(16,185,129,0.3); font-family: 'Cairo', sans-serif;">
-                    اطلب الآن عبر واتساب <i class="fab fa-whatsapp" style="margin-right:8px;"></i>
-                </button>
+                <div class="slider-wrapper"><div class="slider-container" id="mainSlider">${images.map(img => `<img src="${img}" alt="${escapeHtml(p.name)}" srcset="${generateOptimizedSrcSet(img)}" loading="lazy">`).join('')}</div>${images.length>1?`<div class="slider-nav"><button class="nav-btn" id="sliderPrev"><i class="fas fa-chevron-left"></i></button><button class="nav-btn" id="sliderNext"><i class="fas fa-chevron-right"></i></button></div>`:''}</div>
+                <div class="price-container">${countdownHtml}${p.promoTag?`<div>${p.promoTag}</div>`:''}<div><span style="font-size:2.5rem;font-weight:900;color:var(--primary);">${p.price} <small>ج.م</small></span></div>${p.oldPrice && parseFloat(p.oldPrice)>parseFloat(p.price)?`<div style="text-decoration:line-through;">${p.oldPrice} ج.م</div>`:''}</div>
+                ${extraBox}${videoEmbed?`<div class="video-container"><iframe src="${videoEmbed}" allowfullscreen></iframe></div>`:''}
+                <div class="stats-bar"><div><i class="fas fa-eye"></i> ${p.views||0} مشاهدة</div><div><i class="fas fa-box"></i> المتبقي: ${p.stock||1}</div></div>
+                ${hasTryOn?`<div id="tryOnSection"><h3><i class="fas fa-magic"></i> تجربة المعاينة الافتراضية</h3><input type="file" id="fileInput" accept="image/*" style="display:none"><button id="uploadPhotoBtn" class="glass-btn"><i class="fas fa-upload"></i> ارفع صورة للمعاينة</button><div id="uploadProgress" class="progress-bar" style="display:none;"><div class="progress-fill"></div></div>${tryImagesHTML}<div class="try-on-area"><img id="userPhoto" src="https://via.placeholder.com/400x500/f0fdf4/16a34a?text=Upload+Photo"><img id="overlayProduct" src="${tryImages[0]||''}" style="display:none;width:150px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)"></div><div class="controls-cross" id="tryControls" style="display:none;"><div class="cross-row"><button class="control-btn" data-act="up"><i class="fas fa-arrow-up"></i> أعلى</button></div><div class="cross-row"><button class="control-btn" data-act="left">يسار</button><button class="control-btn" data-act="down">أسفل</button><button class="control-btn" data-act="right">يمين</button></div><div class="cross-row"><button class="control-btn" data-act="zoomIn">تكبير</button><button class="control-btn" data-act="zoomOut">تصغير</button><button class="control-btn" data-act="rotate">تدوير</button><button class="control-btn" id="resetTransformBtn">إعادة ضبط</button><button id="saveFinalImageBtn" class="control-btn">حفظ الصورة</button></div></div>${p.tryNote?`<div class="try-note-box">${escapeHtml(p.tryNote)}</div>`:''}</div>`:''}
+                <div><button id="orderNowBtn" style="width:100%;padding:20px;background:var(--success);border:none;color:white;border-radius:60px;font-weight:bold;font-size:1.2rem;margin-top:30px;cursor:pointer;">اطلب الآن عبر واتساب <i class="fab fa-whatsapp"></i></button></div>
+                <script type="application/ld+json">${JSON.stringify(schemaJson)}<\/script>
             `;
-            currentScale = 1;
-            currentRotation = 0;
-            currentTop = 0;
-            currentLeft = 0;
-            const overlay = document.getElementById('overlayProduct');
-            if(overlay && tryImages.length) {
-                overlay.src = tryImages[0];
-                overlay.style.transform = `scale(1) rotate(0deg) translate(-50%, -50%)`;
-                overlay.style.top = '50%';
-                overlay.style.left = '50%';
-                overlay.style.display = 'none';
-                currentTryImageSrc = tryImages[0];
-                setTimeout(() => {
-                    const firstImg = document.querySelector('.try-images-scroll img');
-                    if(firstImg) firstImg.classList.add('active');
-                }, 100);
+            attachProductPageEvents(p.name, tryImages);
+            if(discountVal) startFakeCountdown();
+            updateOpenGraphTags(p.name, p.img || (p.images && p.images[0]) || '1000538486.png', p.price, window.location.href);
+        }
+        
+        function startFakeCountdown() {
+            let time = 24*3600;
+            const timerElem = document.getElementById('discountTimer');
+            if(!timerElem) return;
+            const interval = setInterval(()=>{
+                if(time<=0) clearInterval(interval);
+                else {
+                    time--;
+                    let hours = Math.floor(time/3600);
+                    let mins = Math.floor((time%3600)/60);
+                    let secs = time%60;
+                    timerElem.innerText = `${hours.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+                }
+            },1000);
+        }
+        
+        function attachProductPageEvents(productName, tryImages) {
+            document.getElementById('backToStoreBtn')?.addEventListener('click',()=>loadStore(true));
+            document.getElementById('shareProductBtn')?.addEventListener('click',()=>shareProduct(productName));
+            document.getElementById('orderNowBtn')?.addEventListener('click',()=>openOrderModal(productName));
+            const prev = document.getElementById('sliderPrev'), next = document.getElementById('sliderNext');
+            if(prev && next) {
+                let idx=0, slides = document.querySelectorAll('#mainSlider img');
+                prev.onclick = ()=>{ idx = (idx-1+slides.length)%slides.length; document.getElementById('mainSlider').style.transform=`translateX(-${idx*100}%)`; };
+                next.onclick = ()=>{ idx = (idx+1)%slides.length; document.getElementById('mainSlider').style.transform=`translateX(-${idx*100}%)`; };
             }
-            // تحديث Open Graph
-            updateOpenGraphTags(p.name, (p.img || (p.images && p.images[0]) || '1000538486.png'), p.price, window.location.href);
-        } catch(e) { 
-            console.error("خطأ في loadLandingPage:", e);
-            document.getElementById("loader").style.display = "none"; 
-            document.getElementById("landingPage").style.display = "block";
-            document.getElementById("landingPage").innerHTML = `
-                <div style="text-align:center; padding:50px;">
-                    <i class="fas fa-exclamation-triangle" style="font-size: 64px; color: var(--warning);"></i>
-                    <h2>عذراً، حدث خطأ</h2>
-                    <p>لا يمكن تحميل المنتج حالياً. يرجى المحاولة لاحقاً.</p>
-                    <button class="glass-btn" onclick="loadStore()" style="margin-top:20px;">العودة للمتجر</button>
-                </div>
-            `;
-        }
-    }
-
-    let currentSlide = 0;
-    function moveSlider(dir) {
-        const slider = document.getElementById("mainSlider");
-        if(!slider) return;
-        const totalSlides = slider.children.length;
-        currentSlide = (currentSlide + dir + totalSlides) % totalSlides;
-        slider.style.transform = `translateX(-${currentSlide * 100}%)`;
-    }
-
-    function handleUserPhoto(event) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            document.getElementById('userPhoto').src = e.target.result;
-            const overlay = document.getElementById('overlayProduct');
-            if(overlay && currentTryImageSrc) {
-                overlay.src = currentTryImageSrc;
-                overlay.style.display = 'block';
-                document.getElementById('tryControls').style.display = 'flex';
-                currentScale = 1;
-                currentRotation = 0;
-                currentTop = 0;
-                currentLeft = 0;
-                overlay.style.transform = `scale(1) rotate(0deg) translate(-50%, -50%)`;
-                overlay.style.top = '50%';
-                overlay.style.left = '50%';
-                initDrag(overlay);
+            if(document.getElementById('uploadPhotoBtn')) {
+                document.getElementById('uploadPhotoBtn').onclick = ()=>document.getElementById('fileInput').click();
+                document.getElementById('fileInput').onchange = handleUserPhotoWithProgress;
             }
+            if(tryImages.length) {
+                const scrollDiv = document.querySelector('.try-images-scroll');
+                if(scrollDiv) scrollDiv.querySelectorAll('img').forEach((img,i)=>{
+                    img.onclick = ()=>{ selectTryImage(img.src); };
+                    if(i===0) img.classList.add('active');
+                });
+            }
+            document.querySelectorAll('.control-btn[data-act]').forEach(btn=>{
+                btn.onclick = ()=>adjustProduct(btn.getAttribute('data-act'));
+            });
+            document.getElementById('resetTransformBtn')?.addEventListener('click',resetProductTransform);
+            document.getElementById('saveFinalImageBtn')?.addEventListener('click',saveFinalImage);
+            const overlay = document.getElementById('overlayProduct');
+            if(overlay && tryImages[0]) { overlay.src = tryImages[0]; initDrag(overlay); }
         }
-        reader.readAsDataURL(event.target.files[0]);
-    }
-
-    function adjustProduct(action) {
-        const img = document.getElementById('overlayProduct');
-        if(!img || img.style.display === 'none') return;
-        const step = 12;
-        if(action === 'zoomIn') { currentScale = Math.min(currentScale + 0.1, 3); }
-        if(action === 'zoomOut') { currentScale = Math.max(currentScale - 0.1, 0.3); }
-        if(action === 'rotate') { currentRotation += 15; }
-        if(action === 'up') { currentTop -= step; }
-        if(action === 'down') { currentTop += step; }
-        if(action === 'left') { currentLeft -= step; }
-        if(action === 'right') { currentLeft += step; }
         
-        img.style.transform = `scale(${currentScale}) rotate(${currentRotation}deg) translate(-50%, -50%)`;
-        img.style.top = `calc(50% + ${currentTop}px)`;
-        img.style.left = `calc(50% + ${currentLeft}px)`;
-    }
-
-    function resetProductTransform() {
-        currentScale = 1;
-        currentRotation = 0;
-        currentTop = 0;
-        currentLeft = 0;
-        const img = document.getElementById('overlayProduct');
-        if(img) {
-            img.style.transform = `scale(1) rotate(0deg) translate(-50%, -50%)`;
-            img.style.top = '50%';
-            img.style.left = '50%';
+        function handleUserPhotoWithProgress(event) {
+            const file = event.target.files[0];
+            if(!file) return;
+            const progressBar = document.getElementById('uploadProgress');
+            progressBar.style.display = 'block';
+            const fill = progressBar.querySelector('.progress-fill');
+            let width = 0;
+            const fakeProgress = setInterval(()=>{ if(width<100) { width+=20; fill.style.width=width+'%'; } else clearInterval(fakeProgress); },100);
+            const reader = new FileReader();
+            reader.onload = function(e){
+                clearInterval(fakeProgress);
+                fill.style.width='100%';
+                setTimeout(()=>{ progressBar.style.display='none'; fill.style.width='0%'; },500);
+                document.getElementById('userPhoto').src = e.target.result;
+                const overlay = document.getElementById('overlayProduct');
+                if(overlay && currentTryImageSrc) {
+                    overlay.src = currentTryImageSrc;
+                    overlay.style.display = 'block';
+                    document.getElementById('tryControls').style.display = 'flex';
+                    currentScale=1; currentRotation=0; currentTop=0; currentLeft=0;
+                    overlay.style.transform = `scale(1) rotate(0deg) translate(-50%, -50%)`;
+                    overlay.style.top = '50%'; overlay.style.left = '50%';
+                    initDrag(overlay);
+                }
+            };
+            reader.readAsDataURL(file);
         }
-    }
-
-    function initDrag(el) {
-        let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-        const dragMouseDown = (e) => {
-            e.preventDefault();
-            pos3 = e.clientX || (e.touches ? e.touches[0].clientX : 0);
-            pos4 = e.clientY || (e.touches ? e.touches[0].clientY : 0);
-            document.onmouseup = closeDragElement;
-            document.ontouchend = closeDragElement;
-            document.onmousemove = elementDrag;
-            document.ontouchmove = elementDrag;
-        };
-        const elementDrag = (e) => {
-            e.preventDefault();
-            let x = e.clientX || (e.touches ? e.touches[0].clientX : 0);
-            let y = e.clientY || (e.touches ? e.touches[0].clientY : 0);
-            pos1 = pos3 - x;
-            pos2 = pos4 - y;
-            pos3 = x;
-            pos4 = y;
-            currentTop = currentTop - pos2;
-            currentLeft = currentLeft - pos1;
-            el.style.top = `calc(50% + ${currentTop}px)`;
-            el.style.left = `calc(50% + ${currentLeft}px)`;
-        };
-        const closeDragElement = () => {
-            document.onmouseup = null; document.onmousemove = null;
-            document.ontouchend = null; document.ontouchmove = null;
-        };
-        el.onmousedown = dragMouseDown;
-        el.ontouchstart = dragMouseDown;
-    }
-
-    function openProduct(id) { 
-        loadLandingPage(id);
-        window.scrollTo(0,0);
-    }
-
-    function escapeHtml(str) {
-        if(!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if(m === '&') return '&amp;';
-            if(m === '<') return '&lt;';
-            if(m === '>') return '&gt;';
-            return m;
-        });
-    }
-
-    setInterval(() => {
-        const names = ["أحمد", "محمد", "سارة", "محمود", "ياسين", "نور", "ليلى", "إبراهيم"];
-        const cities = ["القاهرة", "طنطا", "المحلة", "المنصورة", "الإسكندرية", "أسيوط"];
-        const n = names[Math.floor(Math.random()*names.length)];
-        const c = cities[Math.floor(Math.random()*cities.length)];
-        const notif = document.getElementById('notification');
-        if(notif) {
-            document.getElementById('notif-text').innerHTML = `🛒 قام <b>${n}</b> من <b>${c}</b> بطلب منتج الآن!`;
-            notif.style.display = 'flex';
-            setTimeout(() => notif.style.display = 'none', 5000);
+        
+        function saveFinalImage() {
+            const userImg = document.getElementById('userPhoto');
+            const productImg = document.getElementById('overlayProduct');
+            if(!productImg || productImg.style.display==='none') { alert("يرجى رفع صورة أولاً"); return; }
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const area = document.querySelector('.try-on-area');
+            canvas.width = area.clientWidth;
+            canvas.height = area.clientHeight;
+            ctx.drawImage(userImg, 0, 0, canvas.width, canvas.height);
+            const rect = productImg.getBoundingClientRect();
+            const areaRect = area.getBoundingClientRect();
+            const x = rect.left - areaRect.left;
+            const y = rect.top - areaRect.top;
+            const w = rect.width;
+            const h = rect.height;
+            ctx.drawImage(productImg, x, y, w, h);
+            const link = document.createElement('a');
+            link.download = 'preview.png';
+            link.href = canvas.toDataURL();
+            link.click();
         }
-    }, 300000);
-
-    function updateOpenGraphTags(title, imageUrl, price, url) {
-        // إزالة أي meta tags موجودة مسبقاً
-        const ogTags = ['og:title', 'og:image', 'og:description', 'og:url', 'og:type', 'og:site_name'];
-        ogTags.forEach(prop => {
-            const meta = document.querySelector(`meta[property="${prop}"]`);
-            if (meta) meta.remove();
-        });
-        const metaTitle = document.createElement('meta');
-        metaTitle.setAttribute('property', 'og:title');
-        metaTitle.content = title + ' | Aly Tech Store';
-        document.head.appendChild(metaTitle);
         
-        const metaImage = document.createElement('meta');
-        metaImage.setAttribute('property', 'og:image');
-        metaImage.content = imageUrl;
-        document.head.appendChild(metaImage);
+        function adjustProduct(action) {
+            const img = document.getElementById('overlayProduct');
+            if(!img || img.style.display === 'none') return;
+            const step=12;
+            if(action === 'zoomIn') currentScale = Math.min(currentScale+0.1,3);
+            if(action === 'zoomOut') currentScale = Math.max(currentScale-0.1,0.3);
+            if(action === 'rotate') currentRotation += 15;
+            if(action === 'up') currentTop -= step;
+            if(action === 'down') currentTop += step;
+            if(action === 'left') currentLeft -= step;
+            if(action === 'right') currentLeft += step;
+            img.style.transform = `scale(${currentScale}) rotate(${currentRotation}deg) translate(-50%, -50%)`;
+            img.style.top = `calc(50% + ${currentTop}px)`;
+            img.style.left = `calc(50% + ${currentLeft}px)`;
+        }
+        function resetProductTransform() { currentScale=1; currentRotation=0; currentTop=0; currentLeft=0; const img=document.getElementById('overlayProduct'); if(img){ img.style.transform='scale(1) rotate(0deg) translate(-50%, -50%)'; img.style.top='50%'; img.style.left='50%';} }
+        function initDrag(el) { let pos1=0,pos2=0,pos3=0,pos4=0; const dragMouseDown=(e)=>{ e.preventDefault(); pos3=e.clientX||(e.touches?e.touches[0].clientX:0); pos4=e.clientY||(e.touches?e.touches[0].clientY:0); document.onmouseup=closeDragElement; document.ontouchend=closeDragElement; document.onmousemove=elementDrag; document.ontouchmove=elementDrag; }; const elementDrag=(e)=>{ e.preventDefault(); let x=e.clientX||(e.touches?e.touches[0].clientX:0); let y=e.clientY||(e.touches?e.touches[0].clientY:0); pos1=pos3-x; pos2=pos4-y; pos3=x; pos4=y; currentTop=currentTop-pos2; currentLeft=currentLeft-pos1; el.style.top=`calc(50% + ${currentTop}px)`; el.style.left=`calc(50% + ${currentLeft}px)`; }; const closeDragElement=()=>{ document.onmouseup=null; document.onmousemove=null; document.ontouchend=null; document.ontouchmove=null; }; el.onmousedown=dragMouseDown; el.ontouchstart=dragMouseDown; }
+        function selectTryImage(src) { currentTryImageSrc=src; const overlay=document.getElementById('overlayProduct'); if(overlay && overlay.style.display!=='none') overlay.src=src; document.querySelectorAll('.try-images-scroll img').forEach(img=>{ img.classList.remove('active'); if(img.src===src) img.classList.add('active'); }); }
+        function getYouTubeEmbedUrl(url) { if(!url) return null; const patterns=[/(?:youtube\.com\/watch\?v=|youtu.be\/)([^&\n?#]+)/,/youtube\.com\/embed\/([^/?]+)/,/youtube\.com\/shorts\/([^/?]+)/]; for(let p of patterns){ const match=url.match(p); if(match) return `https://www.youtube.com/embed/${match[1]}`; } return null; }
+        function openOrderModal(name){ currentProductName=name; loadCustomerData(); document.getElementById("orderModal").style.display="flex"; }
+        function closeOrderModal(){ document.getElementById("orderModal").style.display="none"; }
+        function sendOrder(){ const name=document.getElementById("custName").value; const phone=document.getElementById("custPhone").value; const address=document.getElementById("custAddress").value; if(!name||!phone||!address){ alert("من فضلك أكمل البيانات"); return; } if(!/^\d+$/.test(phone)){ alert("رقم هاتف صحيح"); return; } saveCustomerData(name,phone); const msg=`طلب جديد:\nالمنتج: ${currentProductName}\nالاسم: ${name}\nالهاتف: ${phone}\nالعنوان: ${address}`; window.location.href=`https://wa.me/201214277900?text=${encodeURIComponent(msg)}`; }
+        function shareProduct(name){ if(navigator.share) navigator.share({title:name,url:window.location.href}); else { navigator.clipboard.writeText(window.location.href); alert("تم نسخ الرابط"); } }
+        function toggleMenu(){ const sb=document.getElementById('sidebar'); const overlay=document.getElementById('overlay'); const isActive=sb.classList.toggle('active'); overlay.style.display=isActive?'block':'none'; }
+        function showAboutUs(){ toggleMenu(); document.getElementById('aboutModal').style.display='flex'; }
+        function showPrivacyPolicy(){ toggleMenu(); document.getElementById('privacyModal').style.display='flex'; }
+        function closeInfoModal(modalId){ document.getElementById(modalId).style.display='none'; }
+        function updateOpenGraphTags(title,imageUrl,price,url){ ['og:title','og:image','og:description','og:url','og:type','og:site_name'].forEach(prop=>{ const meta=document.querySelector(`meta[property="${prop}"]`); if(meta) meta.remove(); }); const addMeta=(prop,content)=>{ const m=document.createElement('meta'); m.setAttribute('property',prop); m.content=content; document.head.appendChild(m); }; addMeta('og:title',title+' | Aly Tech Store'); addMeta('og:image',imageUrl); addMeta('og:description',`سعر المنتج: ${price} ج.م - تسوق الآن من Aly Tech Store`); addMeta('og:url',url); addMeta('og:type','product'); addMeta('og:site_name','Aly Tech Store'); }
         
-        const metaDesc = document.createElement('meta');
-        metaDesc.setAttribute('property', 'og:description');
-        metaDesc.content = `سعر المنتج: ${price} ج.م - تسوق الآن من Aly Tech Store مع ضمان الجودة والتوصيل السريع.`;
-        document.head.appendChild(metaDesc);
+        // Page Visibility API to stop fake notifications
+        let notifIntervalId = null;
+        function startFakeNotifications(){ if(notifIntervalId) clearInterval(notifIntervalId); notifIntervalId = setInterval(()=>{ const names=["أحمد","محمد","سارة","محمود","ياسين","نور","ليلى","إبراهيم"]; const cities=["القاهرة","طنطا","المحلة","المنصورة","الإسكندرية","أسيوط"]; const n=names[Math.floor(Math.random()*names.length)]; const c=cities[Math.floor(Math.random()*cities.length)]; const notif=document.getElementById('notification'); if(notif){ document.getElementById('notif-text').innerHTML=`🛒 قام <b>${n}</b> من <b>${c}</b> بطلب منتج الآن!`; notif.style.display='flex'; setTimeout(()=>notif.style.display='none',5000); } },300000); }
+        document.addEventListener('visibilitychange',()=>{ if(document.hidden){ if(notifIntervalId) clearInterval(notifIntervalId); notifIntervalId=null; } else { startFakeNotifications(); } });
         
-        const metaUrl = document.createElement('meta');
-        metaUrl.setAttribute('property', 'og:url');
-        metaUrl.content = url;
-        document.head.appendChild(metaUrl);
+        // Event Listeners (replacing inline onclick)
+        async function loadCategories() {
+            const snap = await db.collection("categories").get();
+            const catsDiv = document.getElementById("catsList");
+            const mainDiv = document.getElementById("mainStoreCat");
+            catsDiv.innerHTML = '';
+            catsDiv.appendChild(mainDiv);
+            snap.forEach(doc=>{ const catDiv = document.createElement('div'); catDiv.style.padding='15px 0'; catDiv.style.cursor='pointer'; catDiv.style.borderBottom='1px solid #f1f5f9'; catDiv.innerText = `📂 ${doc.data().name}`; catDiv.onclick = ()=>{ toggleMenu(); filterCat(doc.data().name); }; catsDiv.appendChild(catDiv); });
+        }
+        async function filterCat(catName) {
+            toggleMenu();
+            const grid = document.getElementById("grid");
+            grid.style.display = "grid";
+            document.getElementById("landingPage").style.display = "none";
+            grid.innerHTML = "";
+            document.getElementById("loader").style.display = "block";
+            try {
+                const snap = await db.collection("products").where("category", "==", catName).get();
+                document.getElementById("loader").style.display = "none";
+                snap.forEach(doc => renderCard(doc));
+                lastDoc = null; hasMore = false;
+            } catch(e) { console.error(e); document.getElementById("loader").style.display = "none"; alert("خطأ"); }
+        }
         
-        const metaType = document.createElement('meta');
-        metaType.setAttribute('property', 'og:type');
-        metaType.content = 'product';
-        document.head.appendChild(metaType);
+        document.getElementById('homeLogoBtn').addEventListener('click',()=>loadStore(true));
+        document.getElementById('menuToggleBtn').addEventListener('click',toggleMenu);
+        document.getElementById('mainStoreCat').addEventListener('click',()=>loadStore(true));
+        document.getElementById('aboutUsSidebar').addEventListener('click',showAboutUs);
+        document.getElementById('privacySidebar').addEventListener('click',showPrivacyPolicy);
+        document.getElementById('confirmOrderBtn').addEventListener('click',sendOrder);
+        document.getElementById('closeOrderModalBtn').addEventListener('click',closeOrderModal);
+        document.addEventListener('click',(e)=>{ const cardBtn = e.target.closest('.buy-now-btn'); if(cardBtn){ e.stopPropagation(); const pid = cardBtn.getAttribute('data-product-id'); const slug = cardBtn.getAttribute('data-product-slug'); if(slug) loadLandingPageBySlug(slug); else if(pid) loadLandingPageBySlug(pid); } const card = e.target.closest('.card'); if(card && !e.target.closest('.buy-now-btn')){ const pid = card.getAttribute('data-product-id'); const slug = card.getAttribute('data-product-slug'); if(slug) loadLandingPageBySlug(slug); else if(pid) loadLandingPageBySlug(pid); } });
         
-        const metaSite = document.createElement('meta');
-        metaSite.setAttribute('property', 'og:site_name');
-        metaSite.content = 'Aly Tech Store';
-        document.head.appendChild(metaSite);
-    }
-
-    loadCategories();
-    if(productId) loadLandingPage(productId);
-    else loadStore();
+        // Routing: product slug
+        const path = window.location.pathname;
+        if(path.startsWith('/product/')) {
+            const slugPart = path.substring(9);
+            if(slugPart) loadLandingPageBySlug(slugPart);
+            else loadStore(true);
+        } else if (window.location.search.includes('id=')) {
+            const oldId = new URLSearchParams(window.location.search).get('id');
+            if(oldId) loadLandingPageBySlug(oldId);
+            else loadStore(true);
+        } else { loadStore(true); }
+        
+        loadCategories();
+        startFakeNotifications();
+        
+        // Service Worker for dynamic sitemap/robots
+        if ('serviceWorker' in navigator) {
+            const swCode = `self.addEventListener('fetch', event => { const url = new URL(event.request.url); if (url.pathname === '/sitemap.xml') { event.respondWith((async () => { const firebaseConfig = ${JSON.stringify(firebaseConfig)}; importScripts('https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js'); importScripts('https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js'); firebase.initializeApp(firebaseConfig); const db = firebase.firestore(); const snapshot = await db.collection('products').get(); let urls = ''; snapshot.forEach(doc => { const data = doc.data(); const slug = data.slug || (data.name ? data.name.toLowerCase().replace(/\\s+/g,'-') : doc.id); urls += \`<url><loc>https://\${location.host}/product/\${slug}</loc><lastmod>\${new Date().toISOString()}</lastmod></url>\`; }); const xml = \`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\${urls}</urlset>\`; return new Response(xml, { headers: { 'Content-Type': 'application/xml' } }); })()); } else if (url.pathname === '/robots.txt') { event.respondWith(new Response('User-agent: *\\nAllow: /\\nSitemap: https://\${location.host}/sitemap.xml', { headers: { 'Content-Type': 'text/plain' } })); } });`;
+            const blob = new Blob([swCode], {type: 'application/javascript'});
+            navigator.serviceWorker.register(URL.createObjectURL(blob)).then(reg => console.log("SW with sitemap registered")).catch(e=>console.log);
+        }
+        
+        // PWA install
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('installBanner').style.display = 'flex'; });
+        document.getElementById('btnInstall').addEventListener('click',()=>{ if(deferredPrompt){ deferredPrompt.prompt(); deferredPrompt.userChoice.then(()=>{ deferredPrompt=null; }); } document.getElementById('installBanner').style.display='none'; });
+        window.closeInstallBanner = ()=> document.getElementById('installBanner').style.display='none';
+    })();
 </script>
 
 <!-- إضافات متقدمة: تكبير وتصغير الصور والتحريك بالإصبعين، وفيديو في نافذة قابلة للتدوير والتحريك بإصبعين -->
